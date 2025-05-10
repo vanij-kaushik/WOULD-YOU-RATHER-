@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Would You Rather 🤔</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      font-family: 'Arial', sans-serif;
+      background: linear-gradient(135deg, #1d1f27, #2a2b38);
+      color: white;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      padding: 20px;
+      position: relative;
+    }
+    .title {
+      font-family: 'Bangers', cursive;
+      font-size: 3rem;
+      margin-top: 30px;
+      margin-bottom: 20px;
+      text-shadow: 2px 2px 4px #000;
+    }
+    .options {
+      display: flex;
+      flex-direction: row;
+      width: 100%;
+      height: 70%;
+    }
+    .option {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 40px;
+      text-align: center;
+    }
+    .optionA {
+      background-color: #e74c3c; /* Red */
+    }
+    .optionB {
+      background-color: #3498db; /* Blue */
+    }
+    .selected {
+      background-color: #2ecc71 !important; /* Green */
+    }
+    .not-selected {
+      background-color: #e74c3c !important; /* Red */
+      opacity: 0.9;
+    }
+    .nav-buttons {
+      position: absolute;
+      bottom: 30px;
+      display: flex;
+      gap: 20px;
+    }
+    .nav-buttons button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #fff;
+      color: #333;
+    }
+    @media screen and (max-width: 768px) {
+      .options {
+        flex-direction: column;
+      }
+      .option {
+        height: 50%;
+        width: 100%;
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="title">WOULD YOU RATHER 🤔</div>
+    <div class="options">
+      <div class="option optionA" id="optionA" onclick="selectOption('A')"></div>
+      <div class="option optionB" id="optionB" onclick="selectOption('B')"></div>
+    </div>
+    <div class="nav-buttons" id="nav-buttons" style="display: none;">
+      <button onclick="previousQuestion()">Previous</button>
+      <button onclick="nextQuestion()">Next</button>
+    </div>
+  </div>
+
+  <script>
+    // Helper function to generate random questions
+    function generateQuestions() {
+      const verbs = ["fly", "breathe underwater", "talk to animals", "teleport", "read minds", "be invisible", "time travel"];
+      const nouns = ["music", "technology", "internet", "sunlight", "colors", "cars", "books"];
+      const foods = ["pizza", "ice cream", "broccoli", "sushi", "burgers", "chocolate", "pasta"];
+      const superpowers = ["super strength", "super speed", "invisibility", "telepathy", "telekinesis", "healing powers"];
+      const adjectives = ["happy", "cold", "itchy", "tired", "hungry", "excited"];
+
+      const templates = [
+        ["Be able to {verb1}", "Be able to {verb2}"],
+        ["Live in a world without {noun1}", "Live in a world without {noun2}"],
+        ["Only eat {food1} for the rest of your life", "Only eat {food2} for the rest of your life"],
+        ["Have {superpower1}", "Have {superpower2}"],
+        ["Always feel {adjective1}", "Always feel {adjective2}"],
+      ];
+
+      const questions = [];
+      for (let i = 0; i < 1000; i++) {
+        const template = templates[Math.floor(Math.random() * templates.length)];
+        const question = {
+          optionA: template[0].replace("{verb1}", verbs[Math.floor(Math.random() * verbs.length)])
+                              .replace("{noun1}", nouns[Math.floor(Math.random() * nouns.length)])
+                              .replace("{food1}", foods[Math.floor(Math.random() * foods.length)])
+                              .replace("{superpower1}", superpowers[Math.floor(Math.random() * superpowers.length)])
+                              .replace("{adjective1}", adjectives[Math.floor(Math.random() * adjectives.length)]),
+          optionB: template[1].replace("{verb2}", verbs[Math.floor(Math.random() * verbs.length)])
+                              .replace("{noun2}", nouns[Math.floor(Math.random() * nouns.length)])
+                              .replace("{food2}", foods[Math.floor(Math.random() * foods.length)])
+                              .replace("{superpower2}", superpowers[Math.floor(Math.random() * superpowers.length)])
+                              .replace("{adjective2}", adjectives[Math.floor(Math.random() * adjectives.length)]),
+          votesA: Math.floor(Math.random() * 61) + 20, // Random vote percentages between 20 and 80
+          votesB: 100 - Math.floor(Math.random() * 61) + 20 // Ensure total is 100%
+        };
+        questions.push(question);
+      }
+      return questions;
+    }
+
+    // Initialize questions
+    const questions = generateQuestions();
+    let currentIndex = 0;
+    let selected = null;
+
+    function loadQuestion() {
+      const q = questions[currentIndex]; // Reference to the current question
+      selected = null;
+      document.getElementById('optionA').textContent = q.optionA;
+      document.getElementById('optionB').textContent = q.optionB;
+      document.getElementById('optionA').className = 'option optionA';
+      document.getElementById('optionB').className = 'option optionB';
+      document.getElementById('nav-buttons').style.display = 'none';
+    }
+
+    function selectOption(option) {
+      if (selected) return;
+      selected = option;
+      const q = questions[currentIndex]; // Reference to the current question
+
+      const optionA = document.getElementById('optionA');
+      const optionB = document.getElementById('optionB');
+
+      // Show percentage in both buttons
+      optionA.textContent = `${q.optionA} (${q.votesA}%)`;
+      optionB.textContent = `${q.optionB} (${q.votesB}%)`;
+
+      if (option === 'A') {
+        optionA.classList.add('selected');
+        optionB.classList.add('not-selected');
+      } else {
+        optionB.classList.add('selected');
+        optionA.classList.add('not-selected');
+      }
+
+      document.getElementById('nav-buttons').style.display = 'flex';
+    }
+
+    function nextQuestion() {
+      if (currentIndex < questions.length - 1) {
+        currentIndex++;
+        loadQuestion();
+      }
+    }
+
+    function previousQuestion() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        loadQuestion();
+      }
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
